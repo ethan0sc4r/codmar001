@@ -1,0 +1,55 @@
+[tool.poetry]
+name = "darkfleet-server"
+version = "1.0.0"
+description = "DarkFleet Server Edge - High-performance AIS stream processing in Python"
+authors = ["DarkFleet Team"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.109.0"
+uvicorn = {extras = ["standard"], version = "^0.27.0"}
+websockets = "^12.0"
+aiohttp = "^3.9.1"
+pyyaml = "^6.0.1"
+python-dotenv = "^1.0.0"
+pyais = "^2.6.0"
+aiosqlite = "^0.19.0"
+structlog = "^24.1.0"
+tenacity = "^8.2.3"
+pydantic = "^2.5.3"
+pydantic-settings = "^2.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+pytest-asyncio = "^0.23.3"
+black = "^23.12.1"
+ruff = "^0.1.11"
+mypy = "^1.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+darkfleet = "src.main:main"
+darkfleet-config-ui = "src.config_ui_server:main"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

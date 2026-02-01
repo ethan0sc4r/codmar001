@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vessel Lists Manager</title>
+  <script type="module" crossorigin src="/assets/index-B3D-evx8.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Ct7T5yEV.css">
+</head>
+
+<body>
+  <header>
+    <h1>Vessel Lists Manager</h1>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <button id="quick-add-vessel-btn" class="btn btn-secondary">⚓ Quick Add Vessel</button>
+      <button id="create-btn" class="btn">+ New List</button>
+    </div>
+  </header>
+
+    <div id="page-dashboard" class="page-content active">
+      <div style="margin-bottom: 2rem;">
+        <div style="background: var(--card-bg); border: var(--card-border); border-radius: 0.75rem; padding: 1.5rem;">
+          <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">🔍 Search & Filter Vessels</h3>
+          <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; margin-bottom: 0.75rem;">
+            <input type="text" id="filter-mmsi" placeholder="MMSI" />
+            <input type="text" id="filter-imo" placeholder="IMO" />
+            <input type="text" id="filter-name" placeholder="Vessel Name" />
+            <select id="filter-flag"
+              style="width: 100%; padding: 0.75rem; background: var(--input-bg); color: white; border: var(--glass-border); border-radius: 0.5rem;">
+              <option value="">All Flags</option>
+            </select>
+            <select id="filter-list"
+              style="width: 100%; padding: 0.75rem; background: var(--input-bg); color: white; border: var(--glass-border); border-radius: 0.5rem;">
+              <option value="">All Lists</option>
+            </select>
+            <select id="filter-has-imo"
+              style="width: 100%; padding: 0.75rem; background: var(--input-bg); color: white; border: var(--glass-border); border-radius: 0.5rem;">
+              <option value="">IMO: Any</option>
+              <option value="true">With IMO</option>
+              <option value="false">Without IMO</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="advanced-search-btn" class="btn" style="flex: 1;">Search</button>
+            <button id="clear-filters-btn" class="btn btn-secondary">Clear Filters</button>
+          </div>
+        </div>
+        <div id="search-results" style="margin-top: 1rem;"></div>
+      </div>
+
+      <div id="list-grid" class="grid">
+    <div id="page-all-vessels" class="page-content">
+      <div style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="margin: 0; font-size: 1.5rem;">🚢 All Vessels - Aggregated View</h2>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.8;">Total Unique Vessels: <strong
+                id="page-total-unique-vessels">0</strong></p>
+          </div>
+          <button id="page-export-aggregated-btn" class="btn">📤 Export CSV</button>
+        </div>
+        <div id="page-aggregated-vessels-content">
+    <div id="page-documents" class="page-content">
+      <div style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="margin: 0; font-size: 1.5rem;">📄 Vessel Documents</h2>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.8;">Search and manage JSON documents for vessels</p>
+          </div>
+          <button id="create-document-btn" class="btn">+ New Document</button>
+        </div>
+
+        <div style="background: var(--card-bg); border: var(--card-border); border-radius: 0.75rem; padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0;">Documents</h3>
+            <span>Total: <strong id="documents-count">-</strong></span>
+          </div>
+          <div id="page-documents-list">
+            <p style="text-align: center; opacity: 0.7; padding: 3rem;">Enter an MMSI to search for documents</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <div id="page-conflicts-overview" style="display: none;">
+          <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1)); 
+                      border: 2px solid #ef4444; 
+                      border-radius: 1rem; 
+                      padding: 2rem;
+                      margin-bottom: 2rem;
+                      box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+                      animation: conflictPulse 2s infinite;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+              <div style="font-size: 3rem; animation: shake 3s infinite;">⚠️</div>
+              <div>
+                <h3 style="font-size: 1.75rem; font-weight: 800; color: #ef4444; margin: 0;">DATA CONFLICTS DETECTED
+                </h3>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Critical inconsistencies require your attention</p>
+              </div>
+            </div>
+            <div id="page-conflicts-stats"
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        </div>
+      </div>
+    </div>
+  </main>
+
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+            <span style="font-size: 0.8rem; opacity: 0.6;">Custom:</span>
+            <input type="color" id="list-color" value="#38bdf8"
+              style="width: 40px; height: 30px; border: none; background: transparent; cursor: pointer;" />
+          </div>
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">Create List</button>
+      </form>
+    </div>
+  </div>
+
+      <div style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <h3 style="margin: 0; font-size: 1rem;">Add Vessel</h3>
+          <div id="vessel-added-message" style="display: none; padding: 0.5rem 1rem; background: rgba(74, 222, 128, 0.2); border: 1px solid #4ade80; border-radius: 0.5rem; font-size: 0.9rem; color: #4ade80;">
+            ✓ Vessel added successfully
+          </div>
+        </div>
+        <form id="add-vessel-form" style="display: grid; gap: 0.5rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <input type="text" id="vessel-mmsi" placeholder="MMSI *" required />
+            <input type="text" id="vessel-imo" placeholder="IMO" />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <input type="text" id="vessel-name" placeholder="Name" />
+            <input type="text" id="vessel-callsign" placeholder="Callsign" />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <input type="text" id="vessel-flag" placeholder="Flag" />
+            <input type="text" id="vessel-lastposition" placeholder="Last Position (JSON)" />
+          </div>
+          <textarea id="vessel-note" placeholder="Notes" rows="2" style="resize: vertical;"></textarea>
+          <button type="submit" class="btn">Add</button>
+        </form>
+      </div>
+
+      <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+        <h3 style="margin-bottom: 0.5rem; font-size: 1rem;">Vessels</h3>
+        <div id="list-details" class="vessel-list-container">
+  <div id="conflicts-modal" class="modal-overlay">
+    <div class="modal" style="max-width: 900px; max-height: 90vh;">
+      <div class="card-header">
+        <span class="card-title">⚠️ Data Conflicts</span>
+        <button id="close-conflicts" class="delete-btn">×</button>
+      </div>
+      <div id="conflicts-content" style="flex: 1; overflow-y: auto; padding-top: 1rem;">
+  <div id="all-vessels-modal" class="modal-overlay">
+    <div class="modal" style="max-width: 1200px;">
+      <div class="card-header">
+        <span class="card-title">🚢 All Vessels - Aggregated View</span>
+        <button id="close-all-vessels" class="delete-btn">×</button>
+      </div>
+      <div style="padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.2rem;">Total Unique Vessels: <span id="total-unique-vessels">0</span>
+            </h3>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.8; font-size: 0.9rem;">Showing all vessels aggregated across all
+              lists</p>
+          </div>
+          <button id="export-aggregated-btn" class="btn">📤 Export CSV</button>
+        </div>
+
+        <div id="aggregated-vessels-content" style="max-height: 600px; overflow-y: auto;">
+  <div id="document-detail-modal" class="modal-overlay">
+    <div class="modal" style="max-width: 900px;">
+      <div class="card-header">
+        <div>
+          <span class="card-title" id="document-detail-title">Document Detail</span>
+          <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.25rem;" id="document-detail-timestamp"></div>
+        </div>
+        <button id="close-document-detail" class="delete-btn">×</button>
+      </div>
+      <div style="padding: 1.5rem;">
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+          <button id="export-json-btn" class="btn btn-secondary">📥 Export JSON</button>
+          <button id="export-csv-btn" class="btn btn-secondary">📥 Export CSV</button>
+        </div>
+        <div id="document-detail-content" style="max-height: 500px; overflow-y: auto;">
+  <div id="quick-add-modal" class="modal-overlay">
+    <div class="modal" style="max-width: 600px;">
+      <div class="card-header">
+        <span class="card-title">⚓ Quick Add Vessel</span>
+        <button id="close-quick-add" class="delete-btn">×</button>
+      </div>
+      <form id="quick-add-form">
+        <div class="input-group">
+          <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">MMSI *</label>
+          <input type="text" id="quick-mmsi" placeholder="Enter MMSI" required />
+        </div>
+        <div class="input-group">
+          <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">IMO</label>
+          <input type="text" id="quick-imo" placeholder="Enter IMO (optional)" />
+        </div>
+        <div class="input-group">
+          <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Vessel Name</label>
+          <input type="text" id="quick-name" placeholder="Enter vessel name" />
+        </div>
+        <div class="input-group">
+          <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Callsign</label>
+          <input type="text" id="quick-callsign" placeholder="Enter international callsign" />
+        </div>
+        <div class="input-group">
+          <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Flag</label>
+          <input type="text" id="quick-flag" placeholder="Enter flag" />
+        </div>
+        <div class="input-group">
+          <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Last Position
+            (JSON)</label>
+          <input type="text" id="quick-lastposition" placeholder='{"lat": 0, "lon": 0}' />
+        </div>
+        <div class="input-group">
+          <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Notes</label>
+          <textarea id="quick-note" placeholder="Enter notes" rows="3" style="resize: vertical;"></textarea>
+        </div>
+        <div class="input-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <label style="font-size: 0.9rem; font-weight: 600;">Add to Lists *</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" id="select-all-lists" class="btn btn-secondary"
+                style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Select All</button>
+              <button type="button" id="deselect-all-lists" class="btn btn-secondary"
+                style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Deselect All</button>
+            </div>
+          </div>
+          <div id="quick-lists-selection"
+            style="max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 0.5rem; padding: 0.75rem;">

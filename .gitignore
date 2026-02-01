@@ -1,0 +1,81 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+release/
+out/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+server/data/*.db
+client/data/*.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Operating System
+Thumbs.db
+.DS_Store
+
+# Package manager
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# TypeScript
+*.tsbuildinfo
+
+# Electron
+*.AppImage
+*.dmg
+*.exe
+*.deb
+*.rpm
+
+# Maps and large assets (optional - remove if you want to commit them)
+assets/maps/*.mbtiles
+assets/maps/*.geojson
+assets/maps/*.shp
+
+# Certificates (never commit)
+*.pem
+*.key
+*.crt
+*.p12
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+.parcel-cache/
+.vite/

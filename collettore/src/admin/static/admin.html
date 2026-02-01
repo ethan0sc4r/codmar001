@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collettore - Admin Panel</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        h1 { color: #00d4ff; }
+        h2 { color: #888; font-size: 1rem; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-badge {
+            background: #16213e;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid #1f3460;
+        }
+        .card {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #1f3460;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #888; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            background: #0f0f1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #e0e0e0;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .btn-primary { background: #00d4ff; color: #000; }
+        .btn-primary:hover { background: #00b8e6; }
+        .btn-danger { background: #ff4757; color: #fff; }
+        .btn-danger:hover { background: #ff3344; }
+        .btn-secondary { background: #444; color: #fff; }
+        .btn-secondary:hover { background: #555; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+        th { color: #888; font-weight: 500; }
+        .token-display {
+            background: #0f0f1a;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        .badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        .badge-success { background: #2ed573; color: #000; }
+        .badge-danger { background: #ff4757; color: #fff; }
+        .badge-warning { background: #ffa502; color: #000; }
+        .badge-info { background: #00d4ff; color: #000; }
+        #created-token-section { display: none; }
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .alert-warning { background: #ffa50233; border: 1px solid #ffa502; }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: #16213e;
+            border: 1px solid #1f3460;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #888;
+        }
+        .tab.active {
+            background: #00d4ff;
+            color: #000;
+            border-color: #00d4ff;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #0f0f1a;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2rem;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        .stat-label {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        .source-card {
+            background: #0f0f1a;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .source-info h3 {
+            color: #e0e0e0;
+            margin-bottom: 5px;
+        }
+        .source-info p {
+            color: #888;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+        .source-status {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Collettore - Admin Panel</h1>
+            <div class="user-info">
+                <span class="user-badge">{{ADMIN_USER}}</span>
+                <a href="/admin/logout" class="btn btn-secondary btn-sm">Logout</a>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('tokens')">Token API</div>
+            <div class="tab" onclick="showTab('sources')">Sorgenti</div>
+            <div class="tab" onclick="showTab('audit')">Audit Log</div>
+        </div>
+
+        <div id="sources-tab" class="tab-content">
+            <div class="card">
+                <h2>Sorgenti Configurate</h2>
+                <div id="sources-list">
+                    <p style="color: #888;">Caricamento...</p>
+                </div>
+            </div>
+        </div>
+

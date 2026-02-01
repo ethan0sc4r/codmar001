@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COI FINDER - Maritime AIS Tracking</title>
+
+  <link href="./assets/flags/css/flag-icons.min.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+    <div id="toolbar" class="toolbar">
+      <div class="toolbar-left">
+        <button id="btn-zoom-in" class="btn-icon" title="Zoom In">+</button>
+        <button id="btn-zoom-out" class="btn-icon" title="Zoom Out">-</button>
+        <button id="btn-home" class="btn-icon" title="Home">⌂</button>
+        <button id="btn-center-own-ship" class="btn-icon btn-own-ship" title="Centra sulla Mia Nave (VDO)">🚢</button>
+        <button id="btn-layers" class="btn-icon" title="Layers">☰</button>
+        <div class="toolbar-separator"></div>
+        <button id="btn-measure" class="btn-icon" title="Misura Distanza">📏</button>
+        <button id="btn-draw-zone" class="btn-icon" title="Disegna Zona">⬡</button>
+      </div>
+
+      <div class="toolbar-center">
+        <span id="app-title">COI FINDER - Maritime AIS Tracking</span>
+      </div>
+
+      <div class="toolbar-right">
+        <button id="btn-settings" class="btn-icon" title="Settings">⚙</button>
+        <button id="btn-plugins" class="btn-icon" title="Plugins">🔌</button>
+      </div>
+    </div>
+
+      <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <h3>Pannello</h3>
+        </div>
+
+          <div class="tab-panel active" data-panel="tracks">
+            <div class="track-stats-panel">
+              <div class="stat-row">
+                <span class="stat-label">Totali:</span>
+                <span class="stat-value" id="sidebar-total-tracks">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Watchlist:</span>
+                <span class="stat-value" id="sidebar-watchlist-tracks">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Standard:</span>
+                <span class="stat-value" id="sidebar-standard-tracks">0</span>
+              </div>
+            </div>
+
+            <div class="track-list-wrapper">
+              <h4>Lista Tracce</h4>
+              <div class="track-list-container" id="track-list-container">
+                <div class="empty-state">Nessuna traccia attiva</div>
+              </div>
+            </div>
+
+          <div class="tab-panel" data-panel="locallist">
+            <div class="layer-group">
+              <h4>Custom List (<span id="local-list-count">0</span>)</h4>
+
+              <div class="local-list-search">
+                <input type="text" id="local-list-search" placeholder="Cerca MMSI o nome..." class="input-full">
+              </div>
+
+              <div class="local-list-container" id="local-list-container">
+                <div class="empty-state">Nessun mercantile nella Custom List</div>
+              </div>
+
+              <div class="local-list-actions">
+                <button class="btn btn-small btn-secondary" id="btn-local-export" title="Esporta lista in JSON">
+                  Esporta
+                </button>
+                <button class="btn btn-small btn-secondary" id="btn-local-import" title="Importa lista da JSON">
+                  Importa
+                </button>
+                <input type="file" id="local-import-file" accept=".json" style="display: none;">
+              </div>
+            </div>
+          </div>
+
+            <div class="layer-group">
+              <h4>Aggiungi Traccia NRT</h4>
+              <p class="gis-description">
+                Inserisci navi di cui conosci posizione, rotta e velocità.
+                La posizione viene aggiornata automaticamente (dead reckoning).
+              </p>
+
+              <div class="nrt-form-sidebar">
+                <div class="form-row-inline">
+                  <input type="text" id="nrt-mmsi" placeholder="MMSI *" maxlength="9" class="input-small">
+                  <input type="text" id="nrt-name" placeholder="Nome" class="input-small">
+                </div>
+
+                <div class="form-row-inline">
+                  <input type="number" id="nrt-lat" step="0.0001" placeholder="Lat *" class="input-small">
+                  <input type="number" id="nrt-lon" step="0.0001" placeholder="Lon *" class="input-small">
+                </div>
+
+                <div class="form-row-inline">
+                  <input type="number" id="nrt-cog" min="0" max="360" step="0.1" placeholder="COG (°)" class="input-small">
+                  <input type="number" id="nrt-sog" min="0" max="50" step="0.1" placeholder="SOG (kn)" class="input-small">
+                </div>
+
+                <div class="form-row-inline">
+                  <input type="text" id="nrt-imo" placeholder="IMO" class="input-small">
+                  <input type="text" id="nrt-callsign" placeholder="Callsign" class="input-small">
+                </div>
+
+                <textarea id="nrt-notes" rows="2" placeholder="Note..." class="input-full"></textarea>
+
+                <div class="gis-buttons">
+                  <button class="btn btn-small btn-primary" id="btn-nrt-add">
+                    + Aggiungi
+                  </button>
+                  <button class="btn btn-small btn-secondary" id="btn-nrt-use-map">
+                    Da Mappa
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          <div class="tab-panel" data-panel="gis">
+            <div class="layer-group">
+              <h4>Zone Geofencing</h4>
+
+              <div class="zone-mode-panel active" data-panel="draw">
+                <div class="gis-buttons">
+                  <button class="btn btn-small btn-primary" id="btn-draw-polygon">
+                    + Poligono
+                  </button>
+                  <button class="btn btn-small btn-primary" id="btn-draw-circle">
+                    + Cerchio
+                  </button>
+                </div>
+                <small class="gis-hint">Click sulla mappa per disegnare. Esc/Invio per terminare.</small>
+              </div>
+
+                <div class="coord-input-section">
+                  <label class="coord-section-label">Cerchio</label>
+                  <div class="form-row-inline">
+                    <input type="number" id="circle-lat" placeholder="Lat centro" step="0.0001" class="input-small">
+                    <input type="number" id="circle-lng" placeholder="Lng centro" step="0.0001" class="input-small">
+                  </div>
+                  <div class="form-row-inline">
+                    <input type="number" id="circle-radius-coord" placeholder="Raggio (nm)" value="5" min="0.1" step="0.1" class="input-small">
+                    <input type="color" id="circle-color-coord" value="#ff6600" class="color-picker-small">
+                    <button class="btn btn-small btn-primary" id="btn-create-circle-coord">Crea</button>
+                  </div>
+                </div>
+
+            <div class="layer-group">
+              <h4>Range su Traccia</h4>
+              <p class="gis-description">
+                Ancora un cerchio di range a una nave per ricevere alert quando altre navi entrano nel raggio.
+              </p>
+
+              <div class="track-range-form">
+                <div class="form-row-inline">
+                  <input type="text" id="range-mmsi" placeholder="MMSI nave" class="input-small">
+                  <input type="number" id="range-radius" placeholder="Raggio (nm)" value="5" min="0.1" step="0.1" class="input-small">
+                </div>
+                <div class="form-row-inline">
+                  <input type="color" id="range-color" value="#00ff00" class="color-picker-small">
+                  <button class="btn btn-small btn-primary" id="btn-add-range">
+                    + Aggiungi Range
+                  </button>
+                </div>
+              </div>
+
+              <div class="ranges-list" id="ranges-list">
+                <div class="empty-state">Nessun range attivo</div>
+              </div>
+            </div>
+
+          <div class="tab-panel" data-panel="filters">
+            <div class="layer-group">
+              <h4>Filtri Visualizzazione</h4>
+              <div class="filter-options">
+                <div class="checkbox-group">
+                  <input type="checkbox" id="filter-show-watchlist" checked>
+                  <label for="filter-show-watchlist">Mostra Watchlist</label>
+                </div>
+                <div class="checkbox-group">
+                  <input type="checkbox" id="filter-show-standard" checked>
+                  <label for="filter-show-standard">Mostra Standard</label>
+                </div>
+                <div class="checkbox-group">
+                  <input type="checkbox" id="filter-show-labels" checked>
+                  <label for="filter-show-labels">Mostra Etichette</label>
+                </div>
+                <div class="checkbox-group">
+                  <input type="checkbox" id="filter-show-speed-leaders" checked>
+                  <label for="filter-show-speed-leaders">Speed Leaders</label>
+                </div>
+              </div>
+            </div>
+
+          <div class="tab-panel" data-panel="history">
+              <div class="replay-mmsi-section">
+                <label>MMSI da visualizzare</label>
+                <div class="mmsi-input-row">
+                  <input type="text" id="replay-mmsi-input" placeholder="Inserisci MMSI" maxlength="9">
+                  <button class="btn btn-small btn-primary" id="btn-add-replay-mmsi">+</button>
+                </div>
+                <div id="replay-mmsi-list" class="replay-mmsi-list">
+              <div class="replay-date-section">
+                <div class="date-row">
+                  <label>Da</label>
+                  <input type="datetime-local" id="replay-date-from">
+                </div>
+                <div class="date-row">
+                  <label>A</label>
+                  <input type="datetime-local" id="replay-date-to">
+                </div>
+              </div>
+
+              <div id="replay-legend" class="replay-legend hidden">
+                <label>Legenda</label>
+                <div id="replay-legend-items" class="legend-items">
+              <div id="replay-stats" class="replay-stats hidden">
+                <span id="replay-stats-text">0 posizioni caricate</span>
+              </div>
+            </div>
+
+              <div class="prediction-duration-section">
+                <label>Durata predizione</label>
+                <div class="duration-input-row">
+                  <input type="number" id="prediction-hours" placeholder="Ore" min="0" max="72" value="1">
+                  <span>h</span>
+                  <input type="number" id="prediction-minutes" placeholder="Min" min="0" max="59" value="0">
+                  <span>m</span>
+                </div>
+              </div>
+
+              <div id="prediction-legend" class="replay-legend hidden">
+                <label>Predizioni</label>
+                <div id="prediction-legend-items" class="legend-items">
+          <div class="tab-panel" data-panel="map">
+            <div class="layer-group">
+              <h4>Layer Personalizzati</h4>
+              <p class="section-description">Importa layer vettoriali in vari formati.</p>
+              <div id="custom-layers-list" class="custom-layers-list">
+                <div class="empty-state">Nessun layer caricato</div>
+              </div>
+              <div class="layer-actions">
+                <button class="btn btn-small btn-primary" id="btn-load-geojson">
+                  + GeoJSON
+                </button>
+                <button class="btn btn-small btn-secondary" id="btn-load-shapefile">
+                  + Shapefile
+                </button>
+                <button class="btn btn-small btn-secondary" id="btn-load-nvg">
+                  + NVG
+                </button>
+              </div>
+      <div id="map-container">
+        <div id="map"></div>
+
+        <div id="track-popup" class="track-popup hidden">
+          <div class="popup-header">
+            <h3 id="popup-title">Track Details</h3>
+            <button id="btn-close-popup" class="btn-close">×</button>
+          </div>
+          <div class="popup-content" id="popup-content">
+    <div id="statusbar" class="statusbar">
+      <div class="status-item status-coords">
+        <span class="status-label">Pos:</span>
+        <span id="status-coords-decimal">--</span>
+        <span class="coords-separator">|</span>
+        <span id="status-coords-dms">--</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Tracks:</span>
+        <span id="status-tracks">0</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Watchlist:</span>
+        <span id="status-watchlist">0</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Source:</span>
+        <span id="status-source">Disconnected</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">FPS:</span>
+        <span id="status-fps">--</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Copyright:</span>
+        <span id="status-label">Oscar Pietro DORIA</span>
+      </div>
+      <div class="status-item status-time">
+        <span id="status-time">--:--:--</span>
+      </div>
+    </div>
+  </div>
+
+      <div class="settings-status-bar">
+        <div class="status-item">
+          <div class="status-indicator" id="settings-status-indicator"></div>
+          <span id="settings-status-text">Pronto</span>
+        </div>
+      </div>
+
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="connection">Connessione</button>
+          <button class="tab-btn" data-tab="watchlist">Watchlist</button>
+          <button class="tab-btn" data-tab="display">Visualizzazione</button>
+          <button class="tab-btn" data-tab="map">Mappa</button>
+          <button class="tab-btn" data-tab="history">Storico</button>
+        </div>
+
+          <div class="card own-ship-card">
+            <h3>🚢 La Mia Nave (VDO)</h3>
+            <p class="card-description">
+              La tua nave viene rilevata automaticamente dai messaggi VDO del ricevitore AIS locale.
+              In alternativa, puoi configurare manualmente l'MMSI.
+            </p>
+
+            <div class="form-group">
+              <label>MMSI della Mia Nave (opzionale)</label>
+              <input type="text" id="own-ship-mmsi" placeholder="Auto-rilevato da VDO o inserisci manualmente" maxlength="9">
+              <small>Se collegato all'AIS locale, l'MMSI viene rilevato automaticamente dai messaggi VDO.</small>
+            </div>
+
+            <div class="own-ship-status" id="own-ship-status">
+              <span class="status-indicator own-ship-color"></span>
+              <span class="status-text">In attesa di rilevamento VDO...</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>AIS Locale (Ricevitore)</h3>
+            <p class="card-description">
+              Connessione diretta al ricevitore AIS locale via TCP.
+              I dati da questa sorgente hanno priorità rispetto al collettore per lo stesso MMSI.
+            </p>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="local-ais-enabled">
+              <label for="local-ais-enabled">Abilita connessione AIS locale</label>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Host *</label>
+                <input type="text" id="local-ais-host" placeholder="localhost" value="localhost">
+                <small>Hostname o IP del ricevitore AIS</small>
+              </div>
+              <div class="form-group">
+                <label>Porta *</label>
+                <input type="number" id="local-ais-port" value="10110" min="1" max="65535">
+                <small>Porta TCP dell'AIS (default NMEA: 10110)</small>
+              </div>
+            </div>
+
+            <div class="connection-status" id="local-ais-status">
+              <span class="status-indicator disconnected"></span>
+              <span class="status-text">Disconnesso</span>
+              <span class="status-stats"></span>
+            </div>
+
+            <div class="btn-group">
+              <button class="btn btn-primary" id="btn-local-connect">
+                Connetti
+              </button>
+              <button class="btn btn-danger" id="btn-local-disconnect">
+                Disconnetti
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Statistiche Parser AIS</h3>
+            <div class="parser-stats" id="parser-stats">
+              <div class="stat-row">
+                <span class="stat-label">Messaggi decodificati:</span>
+                <span class="stat-value" id="parser-total-parsed">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Errori:</span>
+                <span class="stat-value" id="parser-total-errors">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Frammenti assemblati:</span>
+                <span class="stat-value" id="parser-fragments-assembled">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">In buffer:</span>
+                <span class="stat-value" id="parser-fragments-buffer">0</span>
+              </div>
+            </div>
+            <button class="btn btn-small btn-secondary" id="btn-reset-parser-stats">
+              Reset Statistiche
+            </button>
+          </div>
+
+        <div class="tab-content" id="tab-watchlist">
+          <div class="card">
+            <h3>Configurazione API Watchlist</h3>
+            <p class="card-description">
+              Configura la connessione all'API per sincronizzare la lista dei mercantili da monitorare.
+            </p>
+
+            <div class="form-group">
+              <label>Base URL *</label>
+              <input type="text" id="watchlist-base-url" placeholder="https://api.watchlist.example.com">
+              <small>URL base dell'API (senza trailing slash)</small>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Endpoint Mercantili</label>
+                <input type="text" id="watchlist-vessels-endpoint" value="/api/vessels">
+                <small>GET → [{ mmsi, imo, list_id }]</small>
+              </div>
+              <div class="form-group">
+                <label>Endpoint Liste</label>
+                <input type="text" id="watchlist-lists-endpoint" value="/api/lists">
+                <small>GET → [{ list_id, list_name, color }]</small>
+              </div>
+            </div>
+
+            <h3>Autenticazione</h3>
+            <div class="form-group">
+              <label>Tipo Autenticazione</label>
+              <select id="watchlist-auth-type">
+                <option value="none">Nessuna</option>
+                <option value="bearer">Bearer Token</option>
+                <option value="apikey">API Key</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Token / API Key</label>
+              <input type="password" id="watchlist-token" placeholder="Inserisci il token">
+              <small>Lascia vuoto se non richiesto</small>
+            </div>
+
+            <h3>Sincronizzazione</h3>
+            <div class="checkbox-group">
+              <input type="checkbox" id="watchlist-auto-sync" checked>
+              <label for="watchlist-auto-sync">Sincronizzazione automatica all'avvio</label>
+            </div>
+
+            <div class="form-group">
+              <label>Intervallo Sync (minuti)</label>
+              <input type="number" id="watchlist-sync-interval" value="30" min="1" max="1440">
+              <small>Ogni quanto aggiornare la watchlist (1-1440 minuti)</small>
+            </div>
+
+            <div class="watchlist-stats">
+              <div class="stat-item">
+                <span class="stat-label">Mercantili in lista:</span>
+                <span class="stat-value" id="watchlist-vessel-count">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Liste:</span>
+                <span class="stat-value" id="watchlist-list-count">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Ultimo sync:</span>
+                <span class="stat-value" id="watchlist-last-sync">Mai</span>
+              </div>
+            </div>
+
+            <div class="test-result" id="watchlist-test-result"></div>
+
+            <div class="btn-group">
+              <button class="btn btn-secondary" id="btn-test-watchlist">
+                Test API
+              </button>
+              <button class="btn btn-primary" id="btn-sync-watchlist">
+                Sincronizza Ora
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="tab-map">
+          <div class="card">
+            <h3>Sfondo Mappa</h3>
+            <p class="card-description">
+              Configura il colore di sfondo della mappa (visibile con mappa offline o sotto le tile).
+            </p>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Colore Sfondo</label>
+                <input type="color" id="map-background-color" value="#191a1a" class="color-picker-input">
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Mappa Base</h3>
+            <p class="card-description">
+              Seleziona la mappa di sfondo. Le opzioni online richiedono connessione internet.
+            </p>
+
+            <div class="basemap-selector">
+              <label class="basemap-option">
+                <input type="radio" name="basemap" value="osm" checked>
+                <div class="basemap-preview osm-preview"></div>
+                <span>OpenStreetMap</span>
+              </label>
+              <label class="basemap-option">
+                <input type="radio" name="basemap" value="satellite">
+                <div class="basemap-preview satellite-preview"></div>
+                <span>Satellite</span>
+              </label>
+              <label class="basemap-option">
+                <input type="radio" name="basemap" value="dark">
+                <div class="basemap-preview dark-preview"></div>
+                <span>Dark</span>
+              </label>
+              <label class="basemap-option">
+                <input type="radio" name="basemap" value="nautical">
+                <div class="basemap-preview nautical-preview"></div>
+                <span>Nautica</span>
+              </label>
+              <label class="basemap-option">
+                <input type="radio" name="basemap" value="offline">
+                <div class="basemap-preview offline-preview"></div>
+                <span>Offline</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Layer Cartografici Locali</h3>
+            <p class="card-description">
+              Carica file GeoJSON o Shapefile per visualizzare cartografia offline.
+            </p>
+
+            <div class="file-upload-area" id="file-upload-area">
+              <div class="upload-icon">📁</div>
+              <p>Trascina qui i file o clicca per selezionare</p>
+              <p class="upload-hint">Formati supportati: .geojson, .json, .shp (+.dbf), .nvg</p>
+            </div>
+            <input type="file" id="settings-file-input" accept=".geojson,.json,.shp,.dbf" multiple style="display:none">
+
+            <div class="loaded-layers-list" id="loaded-layers-list">
+        <div class="tab-content" id="tab-history">
+          <div class="card">
+            <h3>Registrazione Storico</h3>
+            <p class="card-description">
+              Registra le posizioni delle navi ricevute dall'AIS locale per analisi e replay.
+              I dati vengono salvati ogni 10 minuti o quando la rotta cambia di oltre 5°.
+            </p>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="history-enabled">
+              <label for="history-enabled">Abilita registrazione storico</label>
+            </div>
+
+            <div class="history-stats" id="history-stats">
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <span class="stat-label">Navi registrate</span>
+                  <span class="stat-value" id="history-vessels-count">0</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Posizioni totali</span>
+                  <span class="stat-value" id="history-positions-count">0</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Spazio utilizzato</span>
+                  <span class="stat-value" id="history-size">0 MB</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Periodo dati</span>
+                  <span class="stat-value" id="history-period">-</span>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-secondary" id="btn-refresh-history-stats">
+              Aggiorna Statistiche
+            </button>
+          </div>
+
+          <div class="card">
+            <h3>Gestione Dati</h3>
+            <p class="card-description">
+              Pulisci i dati storici per liberare spazio su disco.
+            </p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Cancella dati più vecchi di</label>
+                <select id="history-prune-days">
+                  <option value="7">7 giorni</option>
+                  <option value="14">14 giorni</option>
+                  <option value="30">30 giorni</option>
+                  <option value="60">60 giorni</option>
+                  <option value="90" selected>90 giorni</option>
+                  <option value="180">180 giorni</option>
+                  <option value="365">1 anno</option>
+                </select>
+              </div>
+              <div class="form-group" style="display: flex; align-items: flex-end;">
+                <button class="btn btn-primary" id="btn-prune-history">
+                  Applica Pulizia
+                </button>
+              </div>
+            </div>
+
+            <div class="prune-result" id="prune-result" style="display: none;">
+              <span class="prune-result-text"></span>
+            </div>
+
+            <hr style="border-color: var(--border-color); margin: 20px 0;">
+
+            <div class="danger-zone">
+              <p class="danger-warning">Attenzione: questa azione è irreversibile!</p>
+              <button class="btn btn-danger" id="btn-clear-all-history">
+                Svuota TUTTO lo Storico
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  <script src="./assets/lib/maplibre-gl.js"></script>
+
+  <script>
+    // Toggle collapsible card
+    function toggleCard(cardId) {
+      const card = document.getElementById(cardId);
+      if (card) {
+        card.classList.toggle('collapsed');
+      }
+    }
+
+    // Close settings modal
+    function closeSettings() {
+      document.getElementById('settings-modal').classList.add('hidden');
+    }
+  </script>
+

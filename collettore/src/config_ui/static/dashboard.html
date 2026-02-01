@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DarkFleet Collettore - Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #2a2a2a;
+      --bg-tertiary: #3a3a3a;
+      --text-primary: #e0e0e0;
+      --text-secondary: #a0a0a0;
+      --border-color: #444;
+      --accent-color: #4a9eff;
+      --success-color: #44ff44;
+      --danger-color: #ff4444;
+      --warning-color: #ffaa00;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: var(--bg-secondary);
+      border-bottom: 2px solid var(--accent-color);
+      padding: 20px 0;
+      margin-bottom: 30px;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      color: var(--accent-color);
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-secondary);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-unit {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-left: 5px;
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: var(--text-primary);
+    }
+
+    .source-item {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .source-name {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .status-connected {
+      background: var(--success-color);
+      box-shadow: 0 0 8px var(--success-color);
+    }
+
+    .status-disconnected {
+      background: var(--danger-color);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .badge-success {
+      background: var(--success-color);
+      color: #000;
+    }
+
+    .badge-danger {
+      background: var(--danger-color);
+      color: white;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .updating {
+      animation: pulse 1s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="container">
+      <div class="header-content">
+        <div>
+          <h1>📊 DarkFleet Collettore - Dashboard</h1>
+          <p>Monitoraggio real-time aggregazione AIS</p>
+        </div>
+        <div>
+          <button class="btn btn-secondary" onclick="location.reload()">🔄 Ricarica</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>Server Sorgente</h2>
+      <div id="sourcesList">
+    <div class="card">
+      <h2>Stream Output</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 4px;">
+          <div style="font-weight: 600; margin-bottom: 8px;">🔴 Stream RAW</div>
+          <div style="color: var(--text-secondary); font-size: 13px;">
+            Client: <span id="rawClients">0</span> |
+            Messaggi: <span id="rawMessages">0</span>
+          </div>
+        </div>
+        <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 4px;">
+          <div style="font-weight: 600; margin-bottom: 8px;">🟢 Stream Filtered</div>
+          <div style="color: var(--text-secondary); font-size: 13px;">
+            Client: <span id="filteredClients">0</span> |
+            Messaggi: <span id="filteredMessages">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Auto-refresh stats every 2 seconds
+    let updateInterval;
+
+    async function updateStats() {
+      try {
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+
+        // Processor stats
+        document.getElementById('totalReceived').textContent =
+          (data.processor?.total_received || 0).toLocaleString();
+        document.getElementById('uniqueMessages').textContent =
+          (data.processor?.unique || 0).toLocaleString();
+        document.getElementById('duplicates').textContent =
+          (data.processor?.duplicates || 0).toLocaleString();
+
+        const dedupRate = ((data.processor?.dedup_rate || 0) * 100).toFixed(1);
+        document.getElementById('dedupRate').textContent = dedupRate;
+
+        // Redis stats
+        document.getElementById('activeVessels').textContent =
+          (data.redis?.active_vessels || 0).toLocaleString();
+
+        // Output stats
+        const outputStats = data.output || {};
+        document.getElementById('clientsConnected').textContent =
+          ((outputStats.clients_raw || 0) + (outputStats.clients_filtered || 0));
+        document.getElementById('rawClients').textContent = outputStats.clients_raw || 0;
+        document.getElementById('filteredClients').textContent = outputStats.clients_filtered || 0;
+        document.getElementById('rawMessages').textContent =
+          (outputStats.messages_sent_raw || 0).toLocaleString();
+        document.getElementById('filteredMessages').textContent =
+          (outputStats.messages_sent_filtered || 0).toLocaleString();
+
+        // Sources
+        const sources = data.sources || [];
+        const sourcesList = document.getElementById('sourcesList');
+        sourcesList.innerHTML = sources.map(source => {
+          const statusClass = source.connected ? 'status-connected' : 'status-disconnected';
+          const statusText = source.connected ? 'CONNESSO' : 'DISCONNESSO';
+          const badgeClass = source.connected ? 'badge-success' : 'badge-danger';
+
+          return `
+            <div class="source-item">
+              <div>
+                <span class="status-indicator ${statusClass}"></span>
+                <span class="source-name">${source.name}</span>
+                <span class="badge ${badgeClass}">${statusText}</span>
+              </div>
+              <div style="color: var(--text-secondary); font-size: 13px;">
+                ${(source.messages_received || 0).toLocaleString()} messaggi
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Pulse effect
+        document.querySelectorAll('.stat-value').forEach(el => {
+          el.classList.add('updating');
+          setTimeout(() => el.classList.remove('updating'), 300);
+        });
+
+      } catch (error) {
+        console.error('Failed to update stats:', error);
+      }
+    }
+
+    // Initial load
+    updateStats();
+
+    // Auto-refresh
+    updateInterval = setInterval(updateStats, 2000);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      clearInterval(updateInterval);
+    });
+  </script>
+</body>
+</html>
